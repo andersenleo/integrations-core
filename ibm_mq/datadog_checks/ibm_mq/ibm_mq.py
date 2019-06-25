@@ -1,12 +1,12 @@
 # (C) Datadog, Inc. 2018
 # All rights reserved
 # Licensed under a 3-clause BSD style license (see LICENSE)
-
+import datetime
 import logging
 
 from six import iteritems
 
-from datadog_checks.base import ensure_bytes
+from datadog_checks.base import ensure_bytes, ensure_unicode
 from datadog_checks.checks import AgentCheck
 
 from . import connection, errors, metrics
@@ -191,6 +191,9 @@ class IbmMqCheck(AgentCheck):
             mname = '{}.channel.channels'.format(self.METRIC_PREFIX)
             self.gauge(mname, channels, tags=tags)
 
+            for channel_info in response:
+                self._get_pcf_channel_metrics(channel_info, tags)
+
         # grab all the discoverable channels
         self._get_channel_status(queue_manager, '*', tags, config)
 
@@ -199,6 +202,12 @@ class IbmMqCheck(AgentCheck):
         # in this case it'll fail
         for channel in config.channels:
             self._get_channel_status(queue_manager, channel, tags, config)
+
+    def _get_pcf_channel_metrics(self, channel_info, tags):
+        alteration_date = datetime.datetime.strptime(
+            ensure_unicode(channel_info[pymqi.CMQC.MQCA_ALTERATION_DATE]).strip(), "%Y-%m-%d").timestamp()
+
+        self.gauge("ibm_mq.channel.alteration_date", alteration_date, tags=tags)
 
     def _get_channel_status(self, queue_manager, channel, tags, config):
         channel_tags = tags + ["channel:{}".format(channel)]
