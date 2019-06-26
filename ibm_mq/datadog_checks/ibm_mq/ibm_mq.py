@@ -194,8 +194,8 @@ class IbmMqCheck(AgentCheck):
             mname = '{}.channel.channels'.format(self.METRIC_PREFIX)
             self.gauge(mname, channels, tags=tags)
 
-            for channel_info in response:
-                self._get_pcf_channel_metrics(channel_info, tags)
+            # for channel_info in response:
+            #     self._get_pcf_channel_metrics(channel_info, tags)
 
         # grab all the discoverable channels
         self._get_channel_status(queue_manager, '*', tags, config)
