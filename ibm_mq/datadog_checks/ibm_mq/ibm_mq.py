@@ -181,7 +181,6 @@ class IbmMqCheck(AgentCheck):
     def get_pcf_channel_metrics(self, queue_manager, tags, config):
         args = {
             pymqi.CMQCFC.MQCACH_CHANNEL_NAME: ensure_bytes('*'),
-            # pymqi.CMQCFC.MQIACF_CHANNEL_ATTRS: [pymqi.CMQCFC.MQIACH_BATCH_SIZE],
         }
 
         try:
@@ -194,8 +193,8 @@ class IbmMqCheck(AgentCheck):
             mname = '{}.channel.channels'.format(self.METRIC_PREFIX)
             self.gauge(mname, channels, tags=tags)
 
-            # for channel_info in response:
-            #     self._get_pcf_channel_metrics(channel_info, tags)
+            for channel_info in response:
+                self._get_pcf_channel_metrics(channel_info, tags)
 
         # grab all the discoverable channels
         self._get_channel_status(queue_manager, '*', tags, config)
@@ -207,14 +206,17 @@ class IbmMqCheck(AgentCheck):
             self._get_channel_status(queue_manager, channel, tags, config)
 
     def _get_pcf_channel_metrics(self, channel_info, tags):
-        date_time = "{}_{}".format(
-            ensure_unicode(channel_info[pymqi.CMQC.MQCA_ALTERATION_DATE]).strip(),
-            ensure_unicode(channel_info[pymqi.CMQC.MQCA_ALTERATION_TIME]).strip(),
-        )
-        alteration_date = datetime.datetime.strptime(date_time, "%Y-%m-%d_%H.%M.%S").timestamp()
+        for metric_suffix, pymqi_value in iteritems(metrics.channel_metrics()):
+            if pymqi_value in channel_info:
+                metric_value = channel_info[pymqi_value]
+                metric_name = '{}.channel.{}'.format(self.METRIC_PREFIX, metric_suffix)
+                self.gauge(metric_name, metric_value, tags=tags)
 
-        self.gauge("ibm_mq.channel.alteration_date", alteration_date, tags=tags)
-
+        for metric_suffix, func in iteritems(metrics.channel_metrics_functions()):
+            metric_value = func(channel_info)
+            if metric_value is not None:
+                metric_name = '{}.channel.{}'.format(self.METRIC_PREFIX, metric_suffix)
+                self.gauge(metric_name, metric_value, tags=tags)
 
     def _get_channel_status(self, queue_manager, channel, tags, config):
         channel_tags = tags + ["channel:{}".format(channel)]

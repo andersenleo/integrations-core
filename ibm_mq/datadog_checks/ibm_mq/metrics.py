@@ -4,6 +4,10 @@
 
 from __future__ import division
 
+import datetime
+
+from datadog_checks.base import ensure_unicode
+
 try:
     import pymqi
 except ImportError:
@@ -72,5 +76,17 @@ def depth_percent(queue):
     return depth_percent
 
 
+def alteration_date(channel_info):
+    date_time = "{}_{}".format(
+        ensure_unicode(channel_info[pymqi.CMQC.MQCA_ALTERATION_DATE]).strip(),
+        ensure_unicode(channel_info[pymqi.CMQC.MQCA_ALTERATION_TIME]).strip(),
+    )
+    return datetime.datetime.strptime(date_time, "%Y-%m-%d_%H.%M.%S").timestamp()
+
+
 def queue_metrics_functions():
     return {'depth_percent': depth_percent}
+
+
+def channel_metrics_functions():
+    return {'alteration_date': alteration_date}
