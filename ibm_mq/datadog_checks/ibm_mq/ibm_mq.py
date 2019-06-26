@@ -179,7 +179,10 @@ class IbmMqCheck(AgentCheck):
                         log.debug(msg)
 
     def get_pcf_channel_metrics(self, queue_manager, tags, config):
-        args = {pymqi.CMQCFC.MQCACH_CHANNEL_NAME: ensure_bytes('*')}
+        args = {
+            pymqi.CMQCFC.MQCACH_CHANNEL_NAME: ensure_bytes('*'),
+            # pymqi.CMQCFC.MQIACF_CHANNEL_ATTRS: [pymqi.CMQCFC.MQIACH_BATCH_SIZE],
+        }
 
         try:
             pcf = pymqi.PCFExecute(queue_manager)
@@ -204,10 +207,14 @@ class IbmMqCheck(AgentCheck):
             self._get_channel_status(queue_manager, channel, tags, config)
 
     def _get_pcf_channel_metrics(self, channel_info, tags):
-        alteration_date = datetime.datetime.strptime(
-            ensure_unicode(channel_info[pymqi.CMQC.MQCA_ALTERATION_DATE]).strip(), "%Y-%m-%d").timestamp()
+        date_time = "{}_{}".format(
+            ensure_unicode(channel_info[pymqi.CMQC.MQCA_ALTERATION_DATE]).strip(),
+            ensure_unicode(channel_info[pymqi.CMQC.MQCA_ALTERATION_TIME]).strip(),
+        )
+        alteration_date = datetime.datetime.strptime(date_time, "%Y-%m-%d_%H.%M.%S").timestamp()
 
         self.gauge("ibm_mq.channel.alteration_date", alteration_date, tags=tags)
+
 
     def _get_channel_status(self, queue_manager, channel, tags, config):
         channel_tags = tags + ["channel:{}".format(channel)]
