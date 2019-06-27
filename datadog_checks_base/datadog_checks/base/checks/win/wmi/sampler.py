@@ -105,7 +105,7 @@ class WMISampler(Thread):
         self._previous_sample = None
 
         # Sampling state
-        _sampling = False
+        self._sampling = False
 
         self.logger = logger
 
@@ -229,8 +229,10 @@ class WMISampler(Thread):
         """
         Compute new samples.
         """
+        self._sampling = True
         self._runSampleEvent.set()
         self._sampleComplete.wait()
+        self._sampling = False
 
     def __len__(self):
         """
