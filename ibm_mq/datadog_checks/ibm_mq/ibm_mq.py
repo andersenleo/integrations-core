@@ -191,8 +191,6 @@ class IbmMqCheck(AgentCheck):
         else:
             pass
 
-
-
     def get_pcf_channel_metrics(self, queue_manager, tags, config):
         args = {
             pymqi.CMQCFC.MQCACH_CHANNEL_NAME: ensure_bytes('*'),
@@ -251,7 +249,7 @@ class IbmMqCheck(AgentCheck):
             self.service_check(self.CHANNEL_SERVICE_CHECK, AgentCheck.CRITICAL, channel_tags)
         else:
             for channel_info in response:
-                self._get_pcf_channel_status_metrics(channel_info, tags)
+                # self._get_pcf_channel_status_metrics(channel_info, tags)
 
                 name = channel_info[pymqi.CMQCFC.MQCACH_CHANNEL_NAME]
                 name = name.strip()
