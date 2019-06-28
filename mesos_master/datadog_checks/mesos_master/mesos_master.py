@@ -178,7 +178,7 @@ class MesosMaster(AgentCheck):
         return r.json()
 
     def _get_master_state(self, url, timeout, verify, tags):
-        return self._get_json(url + '/state.json', timeout, verify, tags)
+        return self._get_json(url + '/state', timeout, verify, tags)
 
     def _get_master_stats(self, url, timeout, verify, tags):
         if self.version >= [0, 22, 0]:
@@ -188,7 +188,7 @@ class MesosMaster(AgentCheck):
         return self._get_json(url + endpoint, timeout, verify, tags)
 
     def _get_master_roles(self, url, timeout, verify, tags):
-        return self._get_json(url + '/roles.json', timeout, verify, tags)
+        return self._get_json(url + '/roles', timeout, verify, tags)
 
     def _check_leadership(self, url, timeout, verify, tags=None):
         state_metrics = self._get_master_state(url, timeout, verify, tags)
