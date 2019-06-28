@@ -136,7 +136,7 @@ class MesosSlave(AgentCheck):
         return r.json()
 
     def _get_state(self, url, timeout, verify, tags):
-        return self._get_json(url + '/state.json', timeout, verify, tags)
+        return self._get_json(url + '/state', timeout, verify, tags)
 
     def _get_stats(self, url, timeout, verify, tags):
         if self.version >= [0, 22, 0]:
